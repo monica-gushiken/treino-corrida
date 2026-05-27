@@ -1,0 +1,519 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{background:#0f0f0f;color:#f0f0f0;min-height:600px;padding:1.25rem 1rem;max-width:480px;margin:0 auto;font-family:sans-serif}
+.screen{display:none}.screen.active{display:block}
+h1{font-size:20px;font-weight:500;margin-bottom:1.25rem;color:#fff}
+.sec-title{font-size:11px;font-weight:500;color:#666;text-transform:uppercase;letter-spacing:0.1em;margin:1.25rem 0 0.6rem}
+.card{background:#1a1a1a;border-radius:12px;padding:1rem 1.1rem;margin-bottom:0.75rem;border:0.5px solid #2a2a2a}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:400;display:inline-block}
+.bw{background:#1a3a5c;color:#7bc4ff}.br{background:#3a1a0a;color:#ff9050}
+.field-row{display:flex;align-items:center;gap:8px;margin-bottom:0.65rem}
+.field-row label{font-size:13px;color:#aaa;flex:1}
+.field-row input[type=number]{width:60px;background:#111;border:0.5px solid #333;border-radius:8px;color:#f0f0f0;font-size:15px;padding:5px 8px;text-align:center}
+.field-row input[type=text]{flex:1;background:#111;border:0.5px solid #333;border-radius:8px;color:#f0f0f0;font-size:14px;padding:6px 10px}
+.field-row input:focus{outline:none;border-color:#555}
+.field-row span{font-size:12px;color:#666}
+.summary{background:#111;border-radius:8px;padding:0.65rem 0.9rem;margin-top:0.75rem}
+.sr{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+.sr span:first-child{color:#888}.sr span:last-child{color:#f0f0f0;font-weight:500}
+.sr.total{border-top:0.5px solid #2a2a2a;margin-top:4px;padding-top:4px}
+.sr.total span{color:#7bc4ff !important}
+.btn-pr{width:100%;padding:13px;background:#ff7030;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:500;cursor:pointer;margin-top:1.1rem}
+.btn-pr:active{transform:scale(0.98)}
+.btn-se{width:100%;padding:11px;background:transparent;border:0.5px solid #333;border-radius:12px;color:#aaa;font-size:14px;cursor:pointer;margin-top:0.6rem}
+.btn-se:active{background:#1a1a1a}
+.btn-sm{padding:6px 10px;background:transparent;border:0.5px solid #333;border-radius:8px;color:#aaa;font-size:12px;cursor:pointer}
+.btn-sm:active{background:#1a1a1a}
+.btn-danger{padding:6px 10px;background:transparent;border:0.5px solid #3a1010;border-radius:8px;color:#ff6060;font-size:12px;cursor:pointer}
+.btn-add-block{width:100%;padding:9px;background:transparent;border:0.5px dashed #333;border-radius:10px;color:#666;font-size:13px;cursor:pointer;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-add-block:hover{border-color:#555;color:#aaa}
+
+/* INTERVAL BLOCKS */
+.block-list{display:flex;flex-direction:column;gap:8px}
+.block-item{background:#111;border-radius:10px;padding:0.7rem 0.9rem;border:0.5px solid #2a2a2a;display:flex;align-items:center;gap:8px}
+.block-drag{color:#444;cursor:grab;font-size:16px;padding:2px 4px;touch-action:none;user-select:none}
+.block-drag:active{cursor:grabbing}
+.block-badge{min-width:80px}
+.block-type-toggle{background:#1a1a1a;border:0.5px solid #333;border-radius:20px;display:flex;overflow:hidden;flex-shrink:0}
+.block-type-toggle button{padding:4px 10px;background:transparent;border:none;font-size:11px;cursor:pointer;color:#666}
+.block-type-toggle button.active-run{background:#3a1a0a;color:#ff9050}
+.block-type-toggle button.active-walk{background:#1a3a5c;color:#7bc4ff}
+.block-mins{width:52px;background:#0a0a0a;border:0.5px solid #222;border-radius:8px;color:#f0f0f0;font-size:14px;padding:4px 6px;text-align:center}
+.block-mins:focus{outline:none;border-color:#555}
+.block-unit{font-size:11px;color:#555;flex-shrink:0}
+.block-del{background:transparent;border:none;color:#444;font-size:14px;cursor:pointer;padding:2px 4px;flex-shrink:0}
+.block-del:hover{color:#ff6060}
+.block-item.drag-over{border-color:#ff7030;background:#1a1000}
+.block-item.dragging{opacity:0.4}
+
+/* LIST */
+.workout-card{background:#1a1a1a;border-radius:12px;padding:1rem 1.1rem;margin-bottom:0.75rem;border:0.5px solid #2a2a2a;cursor:pointer}
+.workout-card:hover{border-color:#444}
+.workout-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.4rem}
+.workout-card-name{font-size:15px;font-weight:500;color:#f0f0f0}
+.workout-card-actions{display:flex;gap:6px}
+.workout-card-meta{font-size:12px;color:#666;display:flex;gap:12px;flex-wrap:wrap}
+.workout-card-meta span{display:flex;align-items:center;gap:4px}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:#555}
+.empty-state i{font-size:36px;display:block;margin-bottom:0.75rem}
+.empty-state p{font-size:14px}
+
+/* WORKOUT SCREEN */
+.phase-label{font-size:12px;color:#888;text-align:center;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.phase-name{font-size:34px;font-weight:500;text-align:center;margin-bottom:4px}
+.phase-name.walk,.phase-name.warmup,.phase-name.cooldown{color:#7bc4ff}
+.phase-name.run{color:#ff7030}
+.timer-display{font-size:76px;font-weight:300;text-align:center;line-height:1;margin:1.25rem 0;letter-spacing:-2px}
+.next-label{font-size:11px;color:#555;text-align:center;margin-bottom:3px}
+.next-name{font-size:13px;color:#777;text-align:center;margin-bottom:1.25rem}
+.prog-wrap{background:#222;border-radius:20px;height:5px;margin-bottom:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:20px;background:#ff7030;transition:width 0.5s}
+.prog-label{font-size:11px;color:#555;text-align:right;margin-bottom:1.25rem}
+.round-badge{background:#1a2a1a;color:#7ddf7d;font-size:12px;padding:5px 14px;border-radius:20px;text-align:center;display:block;width:fit-content;margin:0 auto 1.25rem}
+.controls{display:flex;gap:10px}
+.btn-pause{flex:1;padding:15px;background:#1a1a1a;border:0.5px solid #333;border-radius:12px;color:#f0f0f0;font-size:22px;cursor:pointer}
+.btn-stop{padding:15px 20px;background:#1a1a1a;border:0.5px solid #333;border-radius:12px;color:#888;font-size:14px;cursor:pointer}
+
+/* DONE */
+.done-icon{font-size:44px;text-align:center;margin:1.5rem 0 0.75rem;color:#7ddf7d}
+.done-title{font-size:26px;font-weight:500;text-align:center;margin-bottom:0.4rem}
+.done-sub{font-size:13px;color:#888;text-align:center;margin-bottom:1.5rem}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.stat-box{background:#1a1a1a;border-radius:10px;padding:0.9rem;text-align:center}
+.stat-box .val{font-size:22px;font-weight:500;color:#ff7030}
+.stat-box .lbl{font-size:11px;color:#666;margin-top:3px}
+
+.alert-top{background:#ff7030;color:#fff;padding:7px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.3s;width:fit-content;margin:0 auto 1rem;display:block;min-height:32px}
+.alert-top.show{opacity:1}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:#888;font-size:13px;cursor:pointer;margin-bottom:1rem;padding:0}
+.back-btn:hover{color:#f0f0f0}
+
+/* confirm modal */
+.modal-bg{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10;align-items:center;justify-content:center;min-height:100%}
+.modal-bg.open{display:flex}
+.modal{background:#1a1a1a;border-radius:14px;padding:1.5rem;max-width:320px;width:90%;border:0.5px solid #333}
+.modal h3{font-size:16px;font-weight:500;margin-bottom:0.5rem}
+.modal p{font-size:13px;color:#888;margin-bottom:1.25rem;line-height:1.5}
+.modal-btns{display:flex;gap:8px}
+.modal-btns button{flex:1;padding:11px;border-radius:10px;font-size:14px;cursor:pointer}
+.modal-cancel{background:transparent;border:0.5px solid #333;color:#aaa}
+.modal-confirm{background:#c0392b;border:none;color:#fff;font-weight:500}
+</style>
+
+<div class="app" role="main" style="position:relative">
+  <h2 class="sr-only">Treino de corrida</h2>
+
+  <div class="alert-top" id="alertBanner"> </div>
+
+  <!-- CONFIRM MODAL -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <h3>Excluir treino</h3>
+      <p id="modalMsg">Tem certeza que deseja excluir este treino? Esta ação não pode ser desfeita.</p>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="modal-confirm" onclick="confirmDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIST SCREEN -->
+  <div class="screen active" id="listScreen">
+    <h1>Meus treinos</h1>
+    <div id="workoutList"></div>
+    <button class="btn-pr" onclick="goNewWorkout()"><i class="ti ti-plus" aria-hidden="true"></i> Novo treino</button>
+    <div style="display:flex;gap:8px;margin-top:0.6rem">
+      <button class="btn-se" style="flex:1;margin-top:0" onclick="exportJSON()"><i class="ti ti-download" aria-hidden="true"></i> Exportar</button>
+      <button class="btn-se" style="flex:1;margin-top:0" onclick="document.getElementById('importInput').click()"><i class="ti ti-upload" aria-hidden="true"></i> Importar</button>
+    </div>
+    <input type="file" id="importInput" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+
+  <!-- CONFIG SCREEN -->
+  <div class="screen" id="configScreen">
+    <button class="back-btn" onclick="goList()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Voltar</button>
+    <h1 id="configTitle">Novo treino</h1>
+
+    <div class="card">
+      <div class="field-row">
+        <label>Nome do treino</label>
+        <input type="text" id="workoutName" placeholder="Ex: Treino de segunda" style="width:200px">
+      </div>
+    </div>
+
+    <div class="sec-title">Aquecimento</div>
+    <div class="card">
+      <div style="margin-bottom:0.5rem"><span class="badge bw">caminhada</span></div>
+      <div class="field-row"><label>Duração</label><input type="number" id="warmupMin" value="5" min="0" max="60"><span>min</span></div>
+    </div>
+
+    <div class="sec-title">Treino intervalado</div>
+    <div class="card">
+      <div class="field-row"><label>Repetições</label><input type="number" id="intervalReps" value="6" min="1" max="30"><span>×</span></div>
+      <div style="font-size:11px;color:#555;margin:0.75rem 0 0.5rem">blocos por repetição — arraste para reordenar:</div>
+      <div class="block-list" id="blockList"></div>
+      <button class="btn-add-block" onclick="addBlock('run')"><i class="ti ti-plus" aria-hidden="true"></i> Adicionar bloco</button>
+    </div>
+
+    <div class="sec-title">Desaquecimento</div>
+    <div class="card">
+      <div style="margin-bottom:0.5rem"><span class="badge bw">caminhada</span></div>
+      <div class="field-row"><label>Duração</label><input type="number" id="cooldownMin" value="5" min="0" max="60"><span>min</span></div>
+    </div>
+
+    <div class="summary" id="summaryBox">
+      <div class="sr"><span>Aquecimento</span><span id="s-warmup">5:00</span></div>
+      <div class="sr"><span>Treino</span><span id="s-interval">18:00</span></div>
+      <div class="sr"><span>Desaquecimento</span><span id="s-cooldown">5:00</span></div>
+      <div class="sr total"><span>Total</span><span id="s-total">28:00</span></div>
+    </div>
+
+    <button class="btn-pr" onclick="saveWorkout()">Salvar treino</button>
+    <button class="btn-se" onclick="goList()">Cancelar</button>
+  </div>
+
+  <!-- WORKOUT SCREEN -->
+  <div class="screen" id="workoutScreen">
+    <div class="phase-label" id="phaseLabel">fase atual</div>
+    <div class="phase-name" id="phaseName">–</div>
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <div class="next-label">a seguir</div>
+    <div class="next-name" id="nextName">–</div>
+    <div class="round-badge" id="roundBadge" style="display:none">–</div>
+    <div class="prog-wrap"><div class="prog-fill" id="progressFill" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+      <div class="prog-label" style="margin-bottom:0" id="progressLabel">0%</div>
+      <div style="font-size:12px;color:#555">decorrido <span id="elapsedDisplay" style="color:#888;font-weight:500">00:00</span> / <span id="totalDisplay" style="color:#555">00:00</span></div>
+    </div>
+    <div class="controls">
+      <button class="btn-pause" id="btnPause" onclick="togglePause()" aria-label="Pausar">&#9646;&#9646;</button>
+      <button class="btn-stop" onclick="stopWorkout()">Encerrar</button>
+    </div>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div class="screen" id="doneScreen">
+    <div class="done-icon"><i class="ti ti-trophy" aria-hidden="true"></i></div>
+    <div class="done-title">Treino concluído!</div>
+    <div class="done-sub" id="doneSub">–</div>
+    <div class="stat-grid" id="statGrid"></div>
+    <button class="btn-pr" onclick="goList()">Ver treinos</button>
+  </div>
+</div>
+
+<script>
+let workouts = JSON.parse(localStorage.getItem('workouts2') || 'null') || [
+  {id:1,name:'Iniciante',warmup:5,reps:4,blocks:[{type:'run',mins:1},{type:'walk',mins:2}],cooldown:5},
+  {id:2,name:'Intermediário',warmup:5,reps:6,blocks:[{type:'run',mins:2},{type:'walk',mins:1}],cooldown:5}
+];
+let editingId=null, deleteTargetId=null;
+let phases=[],phaseIdx=0,timeLeft=0,paused=false,timer=null,clockTimer=null,totalSecs=0,elapsed=0;
+let workoutStartTime=0,workoutPausedMs=0,pauseStartTime=0;
+let activeWorkout=null, audioCtx=null;
+let currentBlocks=[];
+let dragSrcIdx=null;
+
+function persist(){try{localStorage.setItem('workouts2',JSON.stringify(workouts))}catch(e){}}
+
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function playBeep(type){
+  try{
+    const ctx=getAudio();
+    const freqs=type==='start'?[880,1320]:type==='warning'?[660]:[440,660,880];
+    freqs.forEach((freq,i)=>{
+      const osc=ctx.createOscillator(),g=ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.type='sine';osc.frequency.value=freq;
+      const t=ctx.currentTime+i*0.15;
+      g.gain.setValueAtTime(0.35,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.18);
+      osc.start(t);osc.stop(t+0.18);
+    });
+  }catch(e){}
+}
+
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function fmtMin(m){const mi=Math.floor(m),s=Math.round((m-mi)*60);return s>0?`${mi}:${String(s).padStart(2,'0')}`:`${mi}:00`}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function showAlert(msg){const b=document.getElementById('alertBanner');b.textContent=msg;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2200)}
+
+/* MODAL */
+function openModal(id,name){
+  deleteTargetId=id;
+  document.getElementById('modalMsg').textContent=`Tem certeza que deseja excluir "${name}"? Esta ação não pode ser desfeita.`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');deleteTargetId=null}
+function confirmDelete(){
+  if(!deleteTargetId)return;
+  workouts=workouts.filter(w=>w.id!==deleteTargetId);
+  persist();closeModal();function exportJSON(){
+  const data=JSON.stringify(workouts,null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const date=new Date().toISOString().slice(0,10);
+  a.download=`treinos-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data))throw new Error();
+      const valid=data.filter(w=>w.id&&w.name&&Array.isArray(w.blocks));
+      if(!valid.length)throw new Error();
+      const existingIds=new Set(workouts.map(w=>w.id));
+      let added=0,skipped=0;
+      valid.forEach(w=>{
+        if(existingIds.has(w.id)){w.id=Date.now()+Math.random();added++;}
+        else added++;
+        workouts.push(w);
+      });
+      persist();renderList();
+      showAlert(`${added} treino${added>1?'s':''} importado${added>1?'s':''}!`);
+    }catch(err){
+      showAlert('Arquivo inválido.');
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+renderList();
+}
+
+/* LIST */
+function renderList(){
+  const el=document.getElementById('workoutList');
+  if(!workouts.length){
+    el.innerHTML=`<div class="empty-state"><i class="ti ti-run" aria-hidden="true"></i><p>Nenhum treino ainda.<br>Crie o seu primeiro treino!</p></div>`;
+    return;
+  }
+  el.innerHTML=workouts.map(w=>{
+    const blockTotal=w.blocks.reduce((a,b)=>a+b.mins,0);
+    const total=w.warmup+w.reps*blockTotal+w.cooldown;
+    const blockPills=w.blocks.map(b=>
+      `<span class="badge ${b.type==='run'?'br':'bw'}">${b.type==='run'?'corrida':'caminhada'} ${fmtMin(b.mins)}</span>`
+    ).join(' ');
+    return `<div class="workout-card" onclick="startWorkout(${w.id})">
+      <div class="workout-card-top">
+        <span class="workout-card-name">${w.name}</span>
+        <div class="workout-card-actions" onclick="event.stopPropagation()">
+          <button class="btn-sm" onclick="editWorkout(${w.id})" aria-label="Editar"><i class="ti ti-edit" aria-hidden="true"></i></button>
+          <button class="btn-danger" onclick="openModal(${w.id},'${w.name.replace(/'/g,"\\'")}'); event.stopPropagation()" aria-label="Excluir"><i class="ti ti-trash" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="workout-card-meta" style="margin-bottom:6px">
+        <span><i class="ti ti-clock" aria-hidden="true" style="font-size:13px"></i> ${fmtMin(total)} min</span>
+        <span><i class="ti ti-refresh" aria-hidden="true" style="font-size:13px"></i> ${w.reps}× rodadas</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">${blockPills}</div>
+    </div>`;
+  }).join('');
+}
+
+function goList(){if(timer)clearInterval(timer);renderList();showScreen('listScreen')}
+
+/* BLOCKS */
+function addBlock(type){
+  currentBlocks.push({type,mins:1});
+  renderBlocks();updateSummary();
+}
+function removeBlock(i){
+  if(currentBlocks.length<=1)return;
+  currentBlocks.splice(i,1);
+  renderBlocks();updateSummary();
+}
+function setBlockType(i,type){currentBlocks[i].type=type;renderBlocks();updateSummary()}
+function setBlockMins(i,val){currentBlocks[i].mins=parseFloat(val)||0;updateSummary()}
+
+function renderBlocks(){
+  const list=document.getElementById('blockList');
+  list.innerHTML=currentBlocks.map((b,i)=>`
+    <div class="block-item" draggable="true" data-idx="${i}"
+      ondragstart="dragStart(event,${i})" ondragover="dragOver(event,${i})"
+      ondrop="drop(event,${i})" ondragend="dragEnd()">
+      <span class="block-drag" aria-hidden="true"><i class="ti ti-grip-vertical"></i></span>
+      <div class="block-type-toggle">
+        <button onclick="setBlockType(${i},'run')" class="${b.type==='run'?'active-run':''}">corrida</button>
+        <button onclick="setBlockType(${i},'walk')" class="${b.type==='walk'?'active-walk':''}">caminhada</button>
+      </div>
+      <input class="block-mins" type="number" value="${b.mins}" min="0.5" max="60" step="0.5"
+        onchange="setBlockMins(${i},this.value)" oninput="setBlockMins(${i},this.value)">
+      <span class="block-unit">min</span>
+      <button class="block-del" onclick="removeBlock(${i})" aria-label="Remover bloco" ${currentBlocks.length<=1?'disabled style="opacity:0.2"':''}><i class="ti ti-x"></i></button>
+    </div>`).join('');
+}
+
+/* DRAG & DROP */
+function dragStart(e,i){dragSrcIdx=i;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
+function dragOver(e,i){e.preventDefault();document.querySelectorAll('.block-item').forEach(el=>el.classList.remove('drag-over'));if(i!==dragSrcIdx)e.currentTarget.classList.add('drag-over')}
+function drop(e,i){
+  e.preventDefault();
+  if(i===dragSrcIdx)return;
+  const moved=currentBlocks.splice(dragSrcIdx,1)[0];
+  currentBlocks.splice(i,0,moved);
+  renderBlocks();updateSummary();
+}
+function dragEnd(){document.querySelectorAll('.block-item').forEach(el=>{el.classList.remove('dragging','drag-over')})}
+
+/* CONFIG */
+function goNewWorkout(){
+  editingId=null;
+  document.getElementById('configTitle').textContent='Novo treino';
+  document.getElementById('workoutName').value='';
+  document.getElementById('warmupMin').value=5;
+  document.getElementById('intervalReps').value=6;
+  document.getElementById('cooldownMin').value=5;
+  currentBlocks=[{type:'run',mins:1},{type:'walk',mins:2}];
+  renderBlocks();updateSummary();
+  showScreen('configScreen');
+}
+
+function editWorkout(id){
+  const w=workouts.find(x=>x.id===id);if(!w)return;
+  editingId=id;
+  document.getElementById('configTitle').textContent='Editar treino';
+  document.getElementById('workoutName').value=w.name;
+  document.getElementById('warmupMin').value=w.warmup;
+  document.getElementById('intervalReps').value=w.reps;
+  document.getElementById('cooldownMin').value=w.cooldown;
+  currentBlocks=w.blocks.map(b=>({...b}));
+  renderBlocks();updateSummary();
+  showScreen('configScreen');
+}
+
+function saveWorkout(){
+  const name=document.getElementById('workoutName').value.trim()||'Treino sem nome';
+  const cfg={
+    name,
+    warmup:parseFloat(document.getElementById('warmupMin').value)||0,
+    reps:parseInt(document.getElementById('intervalReps').value)||1,
+    blocks:currentBlocks.map(b=>({...b})),
+    cooldown:parseFloat(document.getElementById('cooldownMin').value)||0,
+  };
+  if(editingId){
+    const idx=workouts.findIndex(w=>w.id===editingId);
+    if(idx>=0)workouts[idx]={...workouts[idx],...cfg};
+  } else {
+    workouts.push({id:Date.now(),...cfg});
+  }
+  persist();goList();
+}
+
+function updateSummary(){
+  const warmup=parseFloat(document.getElementById('warmupMin').value)||0;
+  const reps=parseInt(document.getElementById('intervalReps').value)||0;
+  const cooldown=parseFloat(document.getElementById('cooldownMin').value)||0;
+  const blockTotal=currentBlocks.reduce((a,b)=>a+(parseFloat(b.mins)||0),0);
+  const interval=reps*blockTotal;
+  document.getElementById('s-warmup').textContent=fmtMin(warmup);
+  document.getElementById('s-interval').textContent=fmtMin(interval)+` (${reps}×)`;
+  document.getElementById('s-cooldown').textContent=fmtMin(cooldown);
+  document.getElementById('s-total').textContent=fmtMin(warmup+interval+cooldown);
+}
+['warmupMin','intervalReps','cooldownMin'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',updateSummary);
+});
+
+/* WORKOUT ENGINE */
+function buildPhases(w){
+  const p=[];
+  if(w.warmup>0)p.push({name:'Aquecimento',type:'warmup',secs:Math.round(w.warmup*60)});
+  for(let i=0;i<w.reps;i++){
+    w.blocks.forEach(b=>{
+      if(b.mins>0)p.push({
+        name:b.type==='run'?'Corrida':'Caminhada',
+        type:b.type,secs:Math.round(b.mins*60),rep:i+1
+      });
+    });
+  }
+  if(w.cooldown>0)p.push({name:'Desaquecimento',type:'cooldown',secs:Math.round(w.cooldown*60)});
+  return p;
+}
+
+function startWorkout(id){
+  const w=workouts.find(x=>x.id===id);if(!w)return;
+  activeWorkout=w;
+  phases=buildPhases(w);
+  if(!phases.length)return;
+  totalSecs=phases.reduce((a,p)=>a+p.secs,0);
+  elapsed=0;phaseIdx=0;paused=false;
+  workoutStartTime=Date.now();workoutPausedMs=0;
+  document.getElementById('totalDisplay').textContent=fmt(totalSecs);
+  if(clockTimer)clearInterval(clockTimer);
+  clockTimer=setInterval(()=>{
+    if(paused)return;
+    const wallSecs=Math.floor((Date.now()-workoutStartTime-workoutPausedMs)/1000);
+    document.getElementById('elapsedDisplay').textContent=fmt(Math.max(0,wallSecs));
+  },1000);
+  showScreen('workoutScreen');
+  enterPhase(0);playBeep('start');
+}
+
+function enterPhase(idx){
+  phaseIdx=idx;
+  const p=phases[idx],next=phases[idx+1];
+  timeLeft=p.secs;
+  const nameEl=document.getElementById('phaseName');
+  nameEl.textContent=p.name;nameEl.className='phase-name '+(p.type||'');
+  const isInterval=['run','walk'].includes(p.type);
+  const badge=document.getElementById('roundBadge');
+  if(isInterval&&p.rep){badge.style.display='block';badge.textContent=`Rodada ${p.rep} de ${activeWorkout.reps}`}
+  else badge.style.display='none';
+  const labels={run:'correndo agora',walk:'caminhando agora',warmup:'aquecimento',cooldown:'desaquecimento'};
+  document.getElementById('phaseLabel').textContent=labels[p.type]||'';
+  document.getElementById('nextName').textContent=next?`${next.name}${next.rep?' (rodada '+next.rep+')':''}`:'Fim do treino';
+  document.getElementById('btnPause').innerHTML='&#9646;&#9646;';
+  if(timer)clearInterval(timer);
+  timer=setInterval(tick,1000);
+}
+
+function tick(){
+  if(paused)return;
+  if(timeLeft<=5&&timeLeft>1)playBeep('warning');
+  if(timeLeft<=0){
+    elapsed+=phases[phaseIdx].secs;
+    if(phaseIdx+1<phases.length){playBeep('phase');showAlert(phases[phaseIdx+1].name+' — vamos!');enterPhase(phaseIdx+1);}
+    else{clearInterval(timer);showDone();}
+    return;
+  }
+  timeLeft--;updateDisplay();
+}
+
+function updateDisplay(){
+  document.getElementById('timerDisplay').textContent=fmt(timeLeft);
+  const done=elapsed+(phases[phaseIdx].secs-timeLeft);
+  const pct=Math.min(100,Math.round((done/totalSecs)*100));
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=pct+'%';
+}
+
+function togglePause(){
+  paused=!paused;
+  if(paused)pauseStartTime=Date.now();
+  else workoutPausedMs+=Date.now()-pauseStartTime;
+  document.getElementById('btnPause').innerHTML=paused?'&#9654;':'&#9646;&#9646;';
+}
+function stopWorkout(){if(timer)clearInterval(timer);if(clockTimer)clearInterval(clockTimer);goList()}
+
+function showDone(){
+  const w=activeWorkout,totalMin=Math.round(totalSecs/60);
+  document.getElementById('doneSub').textContent=`${w.name} · ${totalMin} minutos · ${w.reps} rodadas`;
+  const runMin=Math.round(w.reps*w.blocks.filter(b=>b.type==='run').reduce((a,b)=>a+b.mins,0));
+  const walkMin=Math.round(w.reps*w.blocks.filter(b=>b.type==='walk').reduce((a,b)=>a+b.mins,0)+w.warmup+w.cooldown);
+  document.getElementById('statGrid').innerHTML=`
+    <div class="stat-box"><div class="val">${runMin} min</div><div class="lbl">corrida total</div></div>
+    <div class="stat-box"><div class="val">${walkMin} min</div><div class="lbl">caminhada total</div></div>
+    <div class="stat-box"><div class="val">${w.reps}</div><div class="lbl">rodadas</div></div>
+    <div class="stat-box"><div class="val">${totalMin}</div><div class="lbl">min totais</div></div>`;
+  playBeep('done');showScreen('doneScreen');
+}
+
+renderList();
+</script>
